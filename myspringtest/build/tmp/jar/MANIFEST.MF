@@ -1,0 +1,6 @@
+Manifest-Version: 1.0
+Implementation-Title: myspringtest
+Automatic-Module-Name: myspringtest
+Implementation-Version: 5.1.17.BUILD-SNAPSHOT
+Created-By: 1.8.0_121 (Oracle Corporation)
+

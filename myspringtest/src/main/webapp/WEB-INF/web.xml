@@ -1,0 +1,53 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+
+  <!-- 配置POST请求的编码为utf-8, 而GET请求无效, 需要在代码中重新编码解码 -->
+  <!--<filter>
+    <filter-name>characterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>utf-8</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>characterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>-->
+
+	<context-param>
+		<param-name>abc_key</param-name>
+		<param-value>${abc_key}</param-value>
+	</context-param>
+	<context-param>
+		<param-name>servletContextInitParams</param-name>
+		<param-value>${servletContextInitParams}</param-value>
+	</context-param>
+
+  <servlet>
+    <servlet-name>springMVC</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 指定加载的配置文件位置, 若不指定, 在SpringMVC中默认为WEB-INF/{servlet-name}-servlet.xml -->
+    <!-- SpringMVC不能使用context-param指定配置文件路径, 因为它不会解析, 而Spring监听器入口则会解析 -->
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+		<!--SpringMVC.xml-->
+      <param-value>classpath:SpringMVC.xml</param-value>
+    </init-param>
+	  <init-param>
+		  <param-name>servletConfigInitParams</param-name>
+		  <param-value>${servletConfigInitParams}</param-value>
+	  </init-param>
+    <!-- 让tomcat启动就初始化Servlet, 不要在第一次请求调用的时候才创建 -->
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>springMVC</servlet-name>
+    <!-- 配置/会拦截静态资源和动态请求, 不会拦截jsp -->
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+</web-app>
