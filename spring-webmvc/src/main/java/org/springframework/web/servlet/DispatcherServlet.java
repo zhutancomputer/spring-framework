@@ -1058,7 +1058,8 @@ public class DispatcherServlet extends FrameworkServlet {
 					return;
 				}
 
-				// 处理视图名字
+				// 处理默认的视图名字, 若用户没有返回视图名(因为ModelAndView有可能是没有视图名的)
+				// 这个时候需要springmvc提供默认的视图名字: 前缀 + 访问路径名 + 后缀
 				applyDefaultViewName(processedRequest, mv);
 
 				// 处理拦截器postHandle方法
@@ -1366,6 +1367,8 @@ public class DispatcherServlet extends FrameworkServlet {
 		String viewName = mv.getViewName();
 		if (viewName != null) {
 			// We need to resolve the view name.
+
+			// 解析出视图对象
 			view = resolveViewName(viewName, mv.getModelInternal(), locale, request);
 			if (view == null) {
 				throw new ServletException("Could not resolve view with name '" + mv.getViewName() +
@@ -1389,6 +1392,8 @@ public class DispatcherServlet extends FrameworkServlet {
 			if (mv.getStatus() != null) {
 				response.setStatus(mv.getStatus().value());
 			}
+
+			// 进行视图渲染, 将model值放到request中
 			view.render(mv.getModelInternal(), request, response);
 		}
 		catch (Exception ex) {

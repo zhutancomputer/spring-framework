@@ -16,13 +16,6 @@
 
 package org.springframework.web.servlet.view;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.Ordered;
@@ -31,6 +24,12 @@ import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.PatternMatchUtils;
 import org.springframework.web.servlet.View;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Simple implementation of the {@link org.springframework.web.servlet.ViewResolver}
@@ -527,6 +526,8 @@ public class UrlBasedViewResolver extends AbstractCachingViewResolver implements
 	@Override
 	protected View loadView(String viewName, Locale locale) throws Exception {
 		AbstractUrlBasedView view = buildView(viewName);
+
+		// 调用生命周期方法
 		View result = applyLifecycleMethods(viewName, view);
 		return (view.checkResource(locale) ? result : null);
 	}
