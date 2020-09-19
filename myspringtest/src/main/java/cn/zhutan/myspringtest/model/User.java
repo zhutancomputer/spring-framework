@@ -1,5 +1,8 @@
 package cn.zhutan.myspringtest.model;
 
+import cn.zhutan.myspringtest.MyAnnotation;
+
+@MyAnnotation
 public class User {
 	private String username;
 	private String password;

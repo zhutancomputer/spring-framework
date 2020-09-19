@@ -16,13 +16,13 @@
 
 package org.springframework.web.servlet.view;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.RequestToViewNameTranslator;
 import org.springframework.web.util.UrlPathHelper;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * {@link RequestToViewNameTranslator} that simply transforms the URI of
@@ -167,6 +167,9 @@ public class DefaultRequestToViewNameTranslator implements RequestToViewNameTran
 	 */
 	@Override
 	public String getViewName(HttpServletRequest request) {
+
+		// 这个获取的就是我们访问的url路径, transformPath(lookupPath)对前后的/去除等等处理
+		// 我们访问/hello, 最终返回的值是前缀 + hello + 后缀, 这个前后缀是空的!!!并不是我们在配置文件中配置的前后缀
 		String lookupPath = this.urlPathHelper.getLookupPathForRequest(request);
 		return (this.prefix + transformPath(lookupPath) + this.suffix);
 	}
@@ -182,9 +185,13 @@ public class DefaultRequestToViewNameTranslator implements RequestToViewNameTran
 	@Nullable
 	protected String transformPath(String lookupPath) {
 		String path = lookupPath;
+
+		// 去除前/
 		if (this.stripLeadingSlash && path.startsWith(SLASH)) {
 			path = path.substring(1);
 		}
+
+		// 去除后/
 		if (this.stripTrailingSlash && path.endsWith(SLASH)) {
 			path = path.substring(0, path.length() - 1);
 		}

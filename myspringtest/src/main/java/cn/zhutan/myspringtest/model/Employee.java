@@ -1,5 +1,8 @@
 package cn.zhutan.myspringtest.model;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class Employee {
 	private String username;
 	private String password;

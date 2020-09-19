@@ -12,10 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class HelloController {
 
 	@RequestMapping("/hello")
-	public String hello(@ModelAttribute("user")User user, @ModelAttribute("employee") Employee employee) {
+	public void hello(@ModelAttribute("user")User user, @ModelAttribute("employee") Employee employee) {
 		System.out.println(user);
 		System.out.println(employee);
-		return "hello";
 	}
 
 	@InitBinder("user")
