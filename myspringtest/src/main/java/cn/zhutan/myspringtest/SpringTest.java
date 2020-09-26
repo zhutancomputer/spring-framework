@@ -24,17 +24,17 @@ public class SpringTest {
 	}
 
 	@Bean
+	public User user() {
+		System.out.println("Create user");
+		return new User();
+	}
+
+	@Bean
 	public Employee employee() {
 		System.out.println("Create employee");
 		user();
 		user();
 		return new Employee();
-	}
-
-	@Bean
-	public User user() {
-		System.out.println("Create user");
-		return new User();
 	}
 
 }
