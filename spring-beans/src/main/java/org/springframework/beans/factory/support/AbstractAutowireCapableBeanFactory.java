@@ -455,6 +455,10 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		try {
 			// Give BeanPostProcessors a chance to return a proxy instead of the target bean instance.
+			// 1. 实例化前
+			// 调用InstantiationAwareBeanPostProcessor的postProcessBeforeInstantiation方法
+			// 代表程序员提供了bean, 那么就直接跳过Spring的实例化到初始化的逻辑了
+			// 直接调用初始化后方法即BeanPostProcessor的postProcessAfterInitialization方法, 并且使用提供的那个bean
 			Object bean = resolveBeforeInstantiation(beanName, mbdToUse);
 			if (bean != null) {
 				return bean;
@@ -466,6 +470,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			// 2-11步在这里走
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -506,6 +511,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
+			// 2. 实例化, 反射创建出bean, 调用方法createBeanInstance(beanName, mbd, args)
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
 		Object bean = instanceWrapper.getWrappedInstance();
@@ -518,6 +524,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		synchronized (mbd.postProcessingLock) {
 			if (!mbd.postProcessed) {
 				try {
+					// 3. 提供修改beanDefinition的扩展点, MergedBeanDefinitionPostProcessor的方法
+					// postProcessAfterInitialization, 注意, 此时bean已经创建了
 					applyMergedBeanDefinitionPostProcessors(mbd, beanType, beanName);
 				}
 				catch (Throwable ex) {
@@ -537,13 +545,17 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 4. 允许提早暴露bean对象, 则添加ObjectFactory到三级缓存
+			// addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean))
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
 		Object exposedObject = bean;
 		try {
+			// 5-7步这里走
 			populateBean(beanName, mbd, instanceWrapper);
+			// 8-11步这里走
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1322,6 +1334,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
+					// 5. 实例化后, 调用InstantiationAwareBeanPostProcessor的postProcessAfterInstantiation方法
 					if (!ibp.postProcessAfterInstantiation(bw.getWrappedInstance(), beanName)) {
 						return;
 					}
@@ -1353,6 +1366,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			if (pvs == null) {
 				pvs = mbd.getPropertyValues();
 			}
+			// 6. 处理属性和属性值, 调用InstantiationAwareBeanPostProcessor
+			// 的postProcessProperties和postProcessPropertyValues(这个方法过时了)
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof InstantiationAwareBeanPostProcessor) {
 					InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) bp;
@@ -1378,6 +1393,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		if (pvs != null) {
+			// 7. 属性注入, applyPropertyValues(beanName, mbd, bw, pvs)
 			applyPropertyValues(beanName, mbd, bw, pvs);
 		}
 	}
@@ -1710,15 +1726,21 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			}, getAccessControlContext());
 		}
 		else {
+			// 8. 调用Aware接口的方法, BeanNameAware, BeanClassLoaderAware, BeanFactoryAware
 			invokeAwareMethods(beanName, bean);
 		}
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 9. 初始化前, 调用BeanPostProcessor的postProcessBeforeInitialization方法, 其中
+			// 1> ApplicationContextAwareProcessor处理很多Aware接口, EnvironmentAware, EmbeddedValueResolverAware,
+			// ResourceLoaderAware, ApplicationEventPublisherAware, MessageSourceAware, ApplicationContextAware
+			// 2> CommonAnnotationBeanPostProcessor处理@PostConstruct注解
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			// 10. 调用初始化方法, 实现了接口InitializingBean, 自定义指定的init-method
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -1727,6 +1749,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 11. 初始化后, 调用BeanPostProcessor的postProcessAfterInitialization方法
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 
